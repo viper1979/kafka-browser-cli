@@ -8,6 +8,9 @@ namespace KafkaBrowserCli
 {
   [Command(Name = "kb", ThrowOnUnexpectedArgument = false, OptionsComparison = StringComparison.InvariantCultureIgnoreCase)]
   [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
+  [Subcommand(
+    typeof(ConfigCmd),
+    typeof(ReadTopicCmd))]
   public class KafkaBrowserCmd : KafkaBrowserCmdBase
   { 
     public KafkaBrowserCmd(ILogger<KafkaBrowserCmd> logger, IConsole console)

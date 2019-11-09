@@ -1,7 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace KafkaBrowserCli
@@ -10,9 +9,19 @@ namespace KafkaBrowserCli
   public abstract class KafkaBrowserCmdBase
   {
     private KafkaBrowserClient _kafkaBrowserClient;
+    private SchemaRegistryClient _schemaRegistryClient;
 
     protected ILogger _logger;
     protected IConsole _console;
+
+    [Option(CommandOptionType.SingleValue, ShortName = "bs", LongName = "bootstrap-server", Description = "Setting kafka bootstrap server (default: PLAINTEXT://127.0.0.1:9092)", ShowInHelpText = true)]
+    public string BootstrapServer { get; set; } = "PLAINTEXT://127.0.0.1:9092";
+
+    [Option(CommandOptionType.SingleValue, ShortName = "sr", LongName = "schema-registry", Description = "Sets the schema-registry url (default: http://127.0.0.1:8081)", ShowInHelpText = true)]
+    public string SchemaRegistryUrl { get; set; } = "http://127.0.0.1:8081";
+
+    [Option(CommandOptionType.SingleValue, ShortName = "zk", LongName = "zookeeper", Description = "Sets the zookeeper address (default: 127.0.0.1:2181)", ShowInHelpText = true)]
+    public string Zookeeper { get; set; } = "127.0.0.1:2181";
 
     [Option(CommandOptionType.SingleValue, ShortName = "", LongName = "output-format", Description = "define the output format you want to receive", ShowInHelpText = true)]
     public string OutputFormat { get; set; } = "json";
@@ -34,6 +43,18 @@ namespace KafkaBrowserCli
       }
     }
 
+    protected SchemaRegistryClient SchemaRegistryClient
+    {
+      get
+      {
+        if (_schemaRegistryClient == null)
+        {
+          _schemaRegistryClient = new SchemaRegistryClient();
+        }
+        return _schemaRegistryClient;
+      }
+    }
+
     protected void OnException(Exception ex)
     {
       OutputError(ex.Message);
@@ -48,14 +69,14 @@ namespace KafkaBrowserCli
 
     protected void OutputToFile(string data)
     {
-      //File.WriteAllText(string.IsN)
+      // TODO: implement continous write to file      
     }
 
     protected void OutputToConsole(string data)
     {
       _console.BackgroundColor = ConsoleColor.Black;
       _console.ForegroundColor = ConsoleColor.White;
-      _console.Out.Write(data);
+      _console.Out.WriteLine(data);
       _console.ResetColor();
     }
 
