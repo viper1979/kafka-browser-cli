@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KafkaBrowserCli": {
+      "commandName": "Project",
+      "commandLineArgs": "read -t sea_vessel_position_reports -b 1"
+    }
+  }
+}

@@ -1,4 +1,9 @@
-﻿using Confluent.Kafka;
+﻿using Avro.Generic;
+using Confluent.Kafka;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using KafkaBrowserCli.Extensions;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,6 +24,12 @@ namespace KafkaBrowserCli
     [Option(CommandOptionType.SingleValue, ShortName = "b", LongName = "from-beginning", Description = "offset to start reading from", ValueName = "offset", ShowInHelpText = true)]
     public bool FromBeginning { get; set; } = false;
 
+    [Option(CommandOptionType.SingleValue, ShortName = "k", LongName = "key-serializer", Description = "The deserializer for the key", ValueName = "key-serializer", ShowInHelpText = true)]
+    public string KeySerializer { get; set; } = "avro";
+
+    [Option(CommandOptionType.SingleValue, ShortName = "v", LongName = "value-serializer", Description = "The deserializer for the value", ValueName = "value-serializer", ShowInHelpText = true)]
+    public string ValueSerializer { get; set; } = "avro";
+
     public ReadTopicCmd(ILogger<ReadTopicCmd> logger, IConsole console)
     {
       _logger = logger;
@@ -36,10 +47,10 @@ namespace KafkaBrowserCli
       {
         BootstrapServers = BootstrapServer,
         GroupId = GroupId,
-        AutoOffsetReset = FromBeginning ? AutoOffsetReset.Earliest : AutoOffsetReset.Latest
+        AutoOffsetReset = FromBeginning ? AutoOffsetReset.Earliest : AutoOffsetReset.Latest,
       };
 
-      using (var consumer = new ConsumerBuilder<Ignore, string>(configuration).Build())
+      using (var consumer = GetAvroConsumer(configuration))
       {
         consumer.Subscribe(Topic);
 
@@ -57,7 +68,15 @@ namespace KafkaBrowserCli
             try
             {
               var cr = consumer.Consume(cts.Token);
-              Output($"{cr.Value} at {cr.TopicPartitionOffset}");
+              var keyStrOutput = cr.Key.ToOutputString();
+              var valStrOutput = cr.Value.ToOutputString();
+
+              var header = $"Topic: {cr.Topic} | Offset: {cr.Offset} | Partition: {cr.Partition.Value} | Timestamp: {cr.Timestamp.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+              Output($"NFO: {header}");
+              Output($"KEY: {keyStrOutput}");
+              Output($"VAL: {valStrOutput}");
+              Output("");
             }
             catch (ConsumeException ex)
             {
@@ -75,6 +94,23 @@ namespace KafkaBrowserCli
       }
 
       return 1;
+    }
+
+    private IConsumer<string, string> GetSimpleConsumer(ConsumerConfig configuration)
+    {
+      return new ConsumerBuilder<string, string>(configuration)
+          .SetErrorHandler((_, e) => OutputError($"{e.Reason}"))
+          .Build();
+    }
+
+    private IConsumer<GenericRecord, GenericRecord> GetAvroConsumer(ConsumerConfig configuration)
+    {
+      var schemaRegistry = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = SchemaRegistryUrl });
+      return new ConsumerBuilder<GenericRecord, GenericRecord>(configuration)
+        .SetKeyDeserializer(new AvroDeserializer<GenericRecord>(schemaRegistry).AsSyncOverAsync())
+        .SetValueDeserializer(new AvroDeserializer<GenericRecord>(schemaRegistry).AsSyncOverAsync())
+        .SetErrorHandler((_, e) => OutputError($"{e.Reason}"))
+        .Build();
     }
   }
 }
