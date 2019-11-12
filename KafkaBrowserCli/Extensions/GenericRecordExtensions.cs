@@ -18,7 +18,7 @@ namespace KafkaBrowserCli.Extensions
         var field = record.Schema.Fields[i];
         if (record.TryGetValue(field.Name, out var value))
         {
-          var strValue = field.Schema.Name == "string" ? "\"" + value + "\"" : value;
+          var strValue = field.Schema.Name == "string" ? "\"" + value + "\"" : (value ?? "null");
           strBuilder.Append($"\"{field.Name}\": {strValue}");
         }
         else
