@@ -1,4 +1,5 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using Confluent.SchemaRegistry;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace KafkaBrowserCli
   public abstract class KafkaBrowserCmdBase
   {
     private KafkaBrowserClient _kafkaBrowserClient;
-    private SchemaRegistryClient _schemaRegistryClient;
+    private CachedSchemaRegistryClient _schemaRegistryClient;
 
     protected ILogger _logger;
     protected IConsole _console;
@@ -43,13 +44,13 @@ namespace KafkaBrowserCli
       }
     }
 
-    protected SchemaRegistryClient SchemaRegistryClient
+    protected CachedSchemaRegistryClient SchemaRegistryClient
     {
       get
       {
-        if (_schemaRegistryClient == null)
+        if(_schemaRegistryClient == null)
         {
-          _schemaRegistryClient = new SchemaRegistryClient();
+          _schemaRegistryClient = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = SchemaRegistryUrl });
         }
         return _schemaRegistryClient;
       }

@@ -10,7 +10,8 @@ namespace KafkaBrowserCli
   [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
   [Subcommand(
     typeof(ConfigCmd),
-    typeof(ReadTopicCmd))]
+    typeof(ReadTopicCmd),
+    typeof(ReadSchemaCmd))]
   public class KafkaBrowserCmd : KafkaBrowserCmdBase
   { 
     public KafkaBrowserCmd(ILogger<KafkaBrowserCmd> logger, IConsole console)
