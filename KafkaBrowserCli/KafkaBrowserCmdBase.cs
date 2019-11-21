@@ -50,7 +50,7 @@ namespace KafkaBrowserCli
       {
         if(_schemaRegistryClient == null)
         {
-          _schemaRegistryClient = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = SchemaRegistryUrl });
+          _schemaRegistryClient = new CachedSchemaRegistryClient(new SchemaRegistryConfig { Url = SchemaRegistryUrl });
         }
         return _schemaRegistryClient;
       }

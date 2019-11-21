@@ -34,7 +34,7 @@ namespace KafkaBrowserCli
             config.AddProvider(new SerilogLoggerProvider(Log.Logger));
           });
           //services.AddHttpClient();
-        });
+        }).UseSerilog();
 
       try
       {

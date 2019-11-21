@@ -45,6 +45,7 @@ namespace KafkaBrowserCli
 
       switch(serializationFormat)
       {
+        case SerializationFormat.Bytes: return DeserializeBytes(data);
         case SerializationFormat.Json: return DeserializeJson(data);
         case SerializationFormat.Avro: return DeserializeAvro(data, topic, isKey);
         default:
@@ -66,6 +67,11 @@ namespace KafkaBrowserCli
       return Newtonsoft.Json.Linq.JObject.Parse(Encoding.UTF8.GetString(data)).ToString();
     }
 
+    private static string DeserializeBytes(byte[] data)
+    {
+      return Encoding.UTF8.GetString(data);
+    }
+
     private static bool CheckAvro(byte[] data)
     {
       if(data[0] == 0)
@@ -79,7 +85,7 @@ namespace KafkaBrowserCli
     {
       if (_cachedSchemaRegistryClient == null)
       {
-        _cachedSchemaRegistryClient = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = _schemaRegistryUrl });
+        _cachedSchemaRegistryClient = new CachedSchemaRegistryClient(new SchemaRegistryConfig { Url = _schemaRegistryUrl });
       }
       if (_avroDeserializer == null)
       {

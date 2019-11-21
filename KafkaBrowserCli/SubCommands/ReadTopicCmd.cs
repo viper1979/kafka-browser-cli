@@ -83,8 +83,13 @@ namespace KafkaBrowserCli
                 }
               }
 
-              var keyAsString = SerializationHelper.Deserialize(cr.Key, true, Topic, keyFormat);
-              var valueAsString = SerializationHelper.Deserialize(cr.Value, false, Topic, valueFormat);
+              string keyAsString = string.Empty;
+              try { keyAsString = SerializationHelper.Deserialize(cr.Key, true, Topic, keyFormat); }
+              catch { keyFormat = SerializationFormat.Bytes; keyAsString = SerializationHelper.Deserialize(cr.Key, true, Topic, keyFormat); }
+
+              string valueAsString = string.Empty;
+              try { valueAsString = SerializationHelper.Deserialize(cr.Key, true, Topic, valueFormat); }
+              catch { valueFormat = SerializationFormat.Bytes; valueAsString = SerializationHelper.Deserialize(cr.Value, false, Topic, valueFormat); }
 
               var header = $"Topic: {cr.Topic} | Offset: {cr.Offset} | Partition: {cr.Partition.Value} | Timestamp: {cr.Timestamp.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")}";
 
